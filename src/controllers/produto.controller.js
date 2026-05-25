@@ -3,9 +3,6 @@ import path from "path";
 
 const produtoController = {
     criar: async (req, res) => {
-        console.log("=== DADOS RECEBIDOS NO SERVIDOR ===");
-    console.log("Arquivo (req.file):", req.file);
-    console.log("Campos de Texto (req.body):", req.body);
         try {
             const { nomeProduto, valorProduto } = req.body;
             
@@ -21,7 +18,6 @@ const produtoController = {
                 vinculoImagem
             });
 
-        
             const novoProduto = {
                 id: resultado.insertId,
                 nomeProduto,
@@ -32,6 +28,72 @@ const produtoController = {
             return res.status(201).json({ mensagem: "Produto cadastrado com sucesso", produto: novoProduto });
         } catch (error) {
             return res.status(500).json({ erro: "Erro ao cadastrar produto", detalhes: error.message });
+        }
+    },
+
+    listar: async (req, res) => {
+        try {
+            const produtos = await produtoModel.selectAll();
+            return res.status(200).json(produtos);
+        } catch (error) {
+         
+            
+            return res.status(500).json({ erro: "Erro ao listar produtos"});
+        }
+    },
+
+    buscarPorId: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const produto = await produtoModel.selectById(id);
+
+            if (!produto) {
+                return res.status(404).json({ erro: "Produto não encontrado" });
+            }
+
+            return res.status(200).json(produto);
+        } catch (error) {
+            return res.status(500).json({ erro: "Erro ao buscar produto", detalhes: error.message });
+        }
+    },
+
+    alterar: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { nomeProduto, valorProduto } = req.body;
+
+            const produtoExistente = await produtoModel.selectById(id);
+            if (!produtoExistente) {
+                return res.status(404).json({ erro: "Produto não encontrado" });
+            }
+
+            const vinculoImagem = req.file ? req.file.filename : produtoExistente.vinculoImagem;
+
+            await produtoModel.update(id, {
+                nomeProduto: nomeProduto || produtoExistente.nomeProduto,
+                valorProduto: valorProduto || produtoExistente.valorProduto,
+                vinculoImagem
+            });
+
+            return res.status(200).json({ mensagem: "Produto atualizado com sucesso" });
+        } catch (error) {
+            return res.status(500).json({ erro: "Erro ao alterar produto", detalhes: error.message });
+        }
+    },
+
+    deletar: async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            const produtoExistente = await produtoModel.selectById(id);
+            if (!produtoExistente) {
+                return res.status(404).json({ erro: "Produto não encontrado" });
+            }
+
+            await produtoModel.delete(id);
+            return res.status(200).json({ mensagem: "Produto deletado com sucesso" });
+        } catch (error) {
+            return res.status(500).json({ erro: "Erro ao deletar produto", detalhes: error.message });
         }
     },
 
@@ -47,18 +109,7 @@ const produtoController = {
         } catch (error) {
             return res.status(500).json({ erro: "Erro no upload", detalhes: error.message });
         }
-    },
-
-    listar: async (req, res) => {
-        try {
-       
-            const produtos = await produtoModel.selectAll();
-            return res.status(200).json(produtos);
-        } catch (error) {
-            return res.status(500).json({ erro: "Erro ao listar produtos", detalhes: error.message });
-        }
     }
-
 };
 
 export default produtoController;

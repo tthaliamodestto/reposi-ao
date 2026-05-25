@@ -9,6 +9,13 @@ app.use(express.json());
 app.use('/produtos', produtoRoutes);
 
 
-app.listen(process.env.SERVER_PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${process.env.SERVER_PORT}`);
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
+
+
+//app.listen(process.env.SERVER_PORT, () => {
+  //  console.log(`Servidor rodando em http://localhost:${process.env.SERVER_PORT}`);
+// });
